@@ -32,4 +32,4 @@ Purchase is a limit buy or market buy that has fulfilled. Sale is a limit sell o
 
 ⚫run `npm run dev`
 
-⚫open localhost:3000 to start using the app
+⚫open localhost:3000 in your web browser to start using the app

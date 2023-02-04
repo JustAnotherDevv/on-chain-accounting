@@ -56,9 +56,10 @@ function App() {
   const [destinationTag, setDestinationTag] = useState("");
   const [fromDate, setFromDate] = useState(""); //("2022-01-01");
   const [toDate, setToDate] = useState(""); //("2022-11-01");
-  const [asset, setAsset] = useState("XRP");
+  const [asset, setAsset] = useState("");
   const [orderBy, setOrderBy] = useState("newest"); // oldest // newest
   const [txType, setTxType] = useState("Payment");
+  const [txResponse, setTxResponse] = useState([]);
 
   const formatTransactions = (transactions, address) => {
     let formattedTransactions = [];
@@ -176,32 +177,183 @@ function App() {
     return filteredTransactions;
   }
 
-  useEffect(() => {
-    (async () => {
-      console.log(
-        await getBatchAccountTx("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn")
-      );
-      console.log(
+  async function RequestTransactions() {
+    setTxResponse(
+      formatTransactions(
         await filterTransactions(
           await getBatchAccountTx("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn")
-        )
-      );
-      console.log(
-        formatTransactions(
-          await filterTransactions(
-            await getBatchAccountTx("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn")
-          ),
-          "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"
-        )
-      );
-    })();
+        ),
+        "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"
+      )
+    );
+  }
+
+  const listItems = txResponse.map((i, index) => (
+    <tr className="hover self-center center" key={index}>
+      <td className="">{i.date}</td>
+      <td className="">{i.from}</td>
+      <td className="">{i.to}</td>
+      <td className="">{i.asset}</td>
+      <td className="">{i.amount}</td>
+      <td className="">{i.txHash.substr(0, 8 - 1)}...</td>
+      <td className="mt-1">
+        <button
+          className="btn btn-sm btn-success"
+          onClick={() => updateGreeting(i.stakeOperatorId.toString())}
+        >
+          <a href={`${i.link}`} target="_blank">
+            View on Bithomp
+          </a>
+        </button>
+      </td>
+    </tr>
+  ));
+
+  function OperatorsList() {
+    return (
+      <div>
+        <div className="overflow-hidden grid place-items-center mt-20">
+          <table className="table w-1/2">
+            <thead>
+              <tr>
+                <th className="bg-success text-gray-800">Date</th>
+                <th className="bg-success text-gray-800">From</th>
+                <th className="bg-success text-gray-800">To</th>
+                <th className="bg-success text-gray-800">Asset</th>
+                <th className="bg-success text-gray-800">Amount</th>
+                <th className="bg-success text-gray-800">Transaction hash</th>
+                <th className="bg-success text-gray-800">Bithomp link</th>
+              </tr>
+            </thead>
+            <tbody>{!txResponse ? "Loading…" : listItems}</tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
+  useEffect(() => {
+    (async () => {})();
   }, []);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <p>On-chain accounting with xrpl.js</p>
-      </header>
+    <div className="w-screen overflow-hidden">
+      <div className="flex flex-col items-center p-5">
+        <p className="text-6xl font-bold mt-12 mb-6 text-success">
+          On-chain accounting with xrpl.js
+        </p>
+        <div className="flex p-10 w-full justify-center">
+          <div className="p-4 mr-5 flex flex-col gap-8 items-end">
+            <label className="w-full">
+              <span>Sending Address</span>
+              <input
+                type="text"
+                placeholder=""
+                className="input input-bordered w-full"
+                value={sendingAddress}
+                onChange={(event) => setSendingAddress(event.target.value)}
+              />
+            </label>
+            <label className="w-full">
+              <span>Source Tag</span>
+              <input
+                type="text"
+                placeholder=""
+                className="input input-bordered w-full"
+                value={sourceTag}
+                onChange={(event) => setSourceTag(event.target.value)}
+              />
+            </label>
+            <label className="w-full">
+              <span>From Date</span>
+              <input
+                type="date"
+                placeholder=""
+                className="input input-bordered w-full"
+                value={fromDate}
+                onChange={(event) => setFromDate(event.target.value)}
+              />
+            </label>
+            <label className="w-full">
+              <span>Asset</span>
+              <input
+                type="text"
+                placeholder="All assets"
+                className="input input-bordered w-full"
+                value={asset}
+                onChange={(event) => setAsset(event.target.value)}
+              />
+            </label>
+            <label className="w-full">
+              <span> Transaction type</span>
+              <input
+                type="text"
+                placeholder=""
+                className="input input-bordered w-full"
+                value={txType}
+                onChange={(event) => setTxType(event.target.value)}
+              />
+            </label>
+          </div>
+          <div className=" p-4 ml-5 flex flex-col gap-8  items-start">
+            <label className="w-full">
+              <span>Receiving Address</span>
+              <input
+                type="text"
+                placeholder=""
+                className="input input-bordered w-full"
+                value={receivingAddress}
+                onChange={(event) => setReceivingAddress(event.target.value)}
+              />
+            </label>
+            <label className="w-full">
+              <span>Destination Tag</span>
+              <input
+                type="text"
+                placeholder=""
+                className="input input-bordered w-full"
+                value={destinationTag}
+                onChange={(event) => setDestinationTag(event.target.value)}
+              />
+            </label>
+            <label className="w-full">
+              <span>To Date</span>
+              <input
+                type="date"
+                placeholder=""
+                className="input input-bordered w-full"
+                value={toDate}
+                onChange={(event) => setToDate(event.target.value)}
+              />
+            </label>
+            <label className="w-full">
+              <span>Order by</span>
+              <select
+                className="select select-bordered w-full"
+                onChange={(e) => setOrderBy(e.target.value)}
+              >
+                <option>newest</option>
+                <option>oldest</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div>
+          <button
+            className="btn btn-success rounded-lg shadow-md"
+            onClick={() => RequestTransactions()}
+          >
+            Submit
+          </button>
+        </div>
+        {!txResponse ? (
+          <div className="self-center">
+            <p>{txResponse.length}</p>
+          </div>
+        ) : (
+          <OperatorsList />
+        )}
+      </div>
     </div>
   );
 }
