@@ -28,6 +28,7 @@ async function getBatchAccountTx(address) {
     });
     let accountTxs = txs.result.transactions;
     for (;;) {
+      console.log(accountTxs.length);
       if (txs["result"]["marker"] === undefined) {
         break;
       } else {
@@ -109,10 +110,16 @@ function App() {
         if (isAddressIncluded || isSecondAddressIncluded) {
           const mutations = balanceChanges[thisAddresIndex].balances;
           mutations.forEach((mutation) => {
+            let assetToDisplay = assets.find((e) => e[1] == mutation.currency);
+            if (!assetToDisplay) {
+              assetToDisplay = `${mutation.currency}`;
+            } else {
+              assetToDisplay = assetToDisplay[0];
+            }
             const currency = !mutation.issuer
               ? "XRP"
               : // : `${mutation.issuer}.${mutation.currency}`;
-                `${assets.find((e) => e[1] == mutation.currency)[0]}`;
+                `${assetToDisplay}`;
 
             const isFee =
               direction === "sent" &&
@@ -212,6 +219,7 @@ function App() {
       filteredTransactions = await filteredTransactions.filter(
         (tx) => tx.tx.DestinationTag == destinationTag
       );
+    console.log(filteredTransactions.length);
     return filteredTransactions;
   }
 
@@ -378,14 +386,23 @@ function App() {
     ["XWM World Money XWM", "XWM"],
   ];
 
+  function truncateStr(str, n = 6) {
+    if (!str) return "";
+    return str.length > n
+      ? str.substr(0, n - 1) +
+          "..." +
+          str.substr(str.length - n, str.length - 1)
+      : str;
+  }
+
   const listItems = txResponse.map((i, index) => (
     <tr className="hover self-center center" key={index}>
       <td className="">{i.date}</td>
-      <td className="">{i.from}</td>
-      <td className="">{i.to}</td>
+      <td className="">{truncateStr(i.from)}</td>
+      <td className="">{truncateStr(i.to)}</td>
       <td className="">{i.asset}</td>
       <td className="">{i.amount}</td>
-      <td className="">{i.txHash.substr(0, 8 - 1)}...</td>
+      <td className="">{truncateStr(i.txHash)}</td>
       <td className="mt-1">
         <button className="btn btn-sm btn-success">
           <a href={`${i.link}`} target="_blank">
@@ -398,7 +415,15 @@ function App() {
 
   function OperatorsList() {
     return (
-      <div className="place-items-center mt-20 flex flex-col items-center">
+      <div className="place-items-center mt-16 flex flex-col items-center">
+        <button className="btn btn-success rounded-lg shadow-md mb-4">
+          <CSVLink
+            filename={`XRPL_accounting_${Date.now()}.csv`}
+            data={csvData}
+          >
+            Download
+          </CSVLink>
+        </button>
         <table className="table">
           <thead>
             <tr>
@@ -413,14 +438,6 @@ function App() {
           </thead>
           <tbody>{!txResponse ? "Loading…" : listItems}</tbody>
         </table>
-        <button className="btn btn-success rounded-lg shadow-md my-8">
-          <CSVLink
-            filename={`XRPL_accounting_${Date.now()}.csv`}
-            data={csvData}
-          >
-            Download
-          </CSVLink>
-        </button>
       </div>
     );
   }
