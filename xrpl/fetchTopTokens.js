@@ -8,9 +8,15 @@ async function fetchDataAndSaveToFile(url, filePath) {
   const responseToJson = await response.json();
   console.log(responseToJson.tokens.length);
   let tokenIds = [];
+  // responseToJson.tokens.forEach((e, i) => {
+  //   tokenIds.push([e.name, e.currency]);
+  //   console.log(e.name);
+  // });
+  responseToJson.tokens.sort((a, b) => a.name.localeCompare(b.name));
   responseToJson.tokens.forEach((e, i) => {
-    tokenIds.push([e.name, e.currency]);
-    console.log(e.name);
+    if (e.user) tokenIds.push([`${e.user} ${e.name}`, e.currency]);
+    if (!e.user) tokenIds.push([`${e.name}`, e.currency]);
+    console.log(e.name, " ", e.user, "\n", e.tags);
   });
   const data = await JSON.stringify(tokenIds);
 
@@ -21,6 +27,7 @@ async function fetchDataAndSaveToFile(url, filePath) {
 }
 
 fetchDataAndSaveToFile(
-  "https://api.xrpl.to/api/tokens?start=0&limit=100",
+  "https://api.xrpl.to/api/tokens?start=0&sortBy=vol24hxrp&sortType=desc&limit=100",
+  // "https://s1.xrplmeta.org/tokens?sort_by=volume_24h&limit=100",
   "tokens.txt"
 );
