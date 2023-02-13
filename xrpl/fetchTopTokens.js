@@ -9,7 +9,7 @@ async function fetchDataAndSaveToFile(url, filePath) {
   console.log(responseToJson.tokens.length);
   let tokenIds = [];
   responseToJson.tokens.forEach((e, i) => {
-    tokenIds.push(e.currency);
+    tokenIds.push([e.name, e.currency]);
     console.log(e.name);
   });
   const data = await JSON.stringify(tokenIds);
