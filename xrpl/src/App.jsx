@@ -50,17 +50,17 @@ async function getBatchAccountTx(address) {
 }
 
 function App() {
-  const [sendingAddress, setSendingAddress] = useState("");
-  const [receivingAddress, setReceivingAddress] = useState(
+  const [sendingAddress, setSendingAddress] = useState(
     "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"
   );
+  const [direction, setDirection] = useState("both");
   const [sourceTag, setSourceTag] = useState("");
   const [destinationTag, setDestinationTag] = useState("");
   const [fromDate, setFromDate] = useState(""); //("2022-01-01");
   const [toDate, setToDate] = useState(""); //("2022-11-01");
   const [asset, setAsset] = useState("");
   const [orderBy, setOrderBy] = useState("newest"); // oldest // newest
-  const [txType, setTxType] = useState("Payment");
+  const [txType, setTxType] = useState("");
   const [txResponse, setTxResponse] = useState([]);
   const [customAsset, setCustomAsset] = useState("");
   const [isFetching, setIsFetching] = useState(false);
@@ -100,7 +100,7 @@ function App() {
           }
         });
         let isSecondAddressIncluded = false;
-        let thisSecondAddresIndex;
+        // let thisSecondAddresIndex;
         balanceChanges.forEach((e, i) => {
           if (e.account == secondAddress) {
             isAddressIncluded = true;
@@ -168,15 +168,15 @@ function App() {
     );
     console.log(filteredTransactions.length);
     // Checking if sender matches sending address
-    if (sendingAddress.length != 0)
+    if (sendingAddress.length != 0 && direction == "sent")
       filteredTransactions = await filteredTransactions.filter(
         (tx) => tx.tx.Account == sendingAddress
       );
     console.log(filteredTransactions.length);
     // Checking if destination matches receving address
-    if (receivingAddress.length != 0)
+    if (sendingAddress.length != 0 && direction == "received")
       filteredTransactions = await filteredTransactions.filter(
-        (tx) => tx.tx.Destination == receivingAddress
+        (tx) => tx.tx.Destination == sendingAddress
       );
     console.log(filteredTransactions.length);
     // Filtering for selected tx type
@@ -195,7 +195,7 @@ function App() {
         // const moment = new Date((tx.tx.date + 946684800) * 1000).toISOString();
         const moment = rippleTimeToISOTime(tx.tx.date);
         const fromDateFormatted = new Date(fromDate).toISOString();
-        console.log();
+        // console.log();
         // console.log(fromDateFormatted);
         return moment >= fromDateFormatted;
       });
@@ -226,39 +226,27 @@ function App() {
   async function RequestTransactions() {
     setIsFetching(true);
     let sendingTx = [];
-    if (receivingAddress.length == 0 || !receivingAddress)
-      sendingTx = await getBatchAccountTx(sendingAddress);
-    let receivingTx = [];
-    if (sendingTx.length == 0)
-      receivingTx = await getBatchAccountTx(receivingAddress);
-    const batchTx = sendingTx.concat(receivingTx);
+    // if (receivingAddress.length == 0 || !receivingAddress)
+    sendingTx = await getBatchAccountTx(sendingAddress);
+    // if (sendingTx.length == 0)
+    //   receivingTx = await getBatchAccountTx(receivingAddress);
+    // const batchTx = sendingTx.concat(receivingTx);
 
-    const filteredTx = await filterTransactions(batchTx);
+    const filteredTx = await filterTransactions(sendingTx);
 
     const finalFormatted = await formatTransactions(
       filteredTx,
-      receivingAddress,
+      sendingAddress,
       sendingAddress
       // "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"
     );
 
     setTxResponse(finalFormatted);
 
-    console.log(
-      sendingTx,
-      "\n",
-      receivingTx,
-      "\n",
-      batchTx,
-      "\n",
-      filteredTx,
-      "\n",
-      finalFormatted,
-      "\n"
-    );
+    console.log(sendingTx, "\n", filteredTx, "\n", finalFormatted, "\n");
 
     console.log(
-      `${sendingTx.length}\n${receivingTx.length}\n${batchTx.length}\n${filteredTx.length}\n${finalFormatted.length}\n`
+      `${sendingTx.length}\n${filteredTx.length}\n${finalFormatted.length}\n`
     );
 
     let tempCsvData = csvData;
@@ -459,7 +447,7 @@ function App() {
           On-chain accounting with xrpl.js
         </p>
         <div className="flex p-10 w-full justify-center">
-          <div className="p-4 mr-5 flex flex-col gap-8 items-end">
+          <div className="p-4 mr-5 flex flex-col gap-8 items-end w-1/4">
             <label className="w-full">
               <span>Sending Address</span>
               <input
@@ -491,7 +479,7 @@ function App() {
               />
             </label>
             <label className="w-full">
-              <span> Transaction type</span>
+              <span> Transaction Type</span>
               <select
                 className="select select-bordered w-full"
                 onChange={(event) => setTxType(event.target.value)}
@@ -514,26 +502,17 @@ function App() {
               </select>
             </label>
           </div>
-          <div className=" p-4 ml-5 flex flex-col gap-8 items-start">
+          <div className=" p-4 ml-5 flex flex-col gap-8 items-start w-1/4">
             <label className="w-full">
-              <span>Receiving Address</span>
-              <input
-                type="text"
-                placeholder=""
-                className="input input-bordered w-full"
-                value={receivingAddress}
-                onChange={(event) => setReceivingAddress(event.target.value)}
-              />
-            </label>
-            <label className="w-full">
-              <span>Destination Tag</span>
-              <input
-                type="text"
-                placeholder=""
-                className="input input-bordered w-full"
-                value={destinationTag}
-                onChange={(event) => setDestinationTag(event.target.value)}
-              />
+              <span>Tx Direction</span>
+              <select
+                className="select select-bordered w-full"
+                onChange={(e) => setDirection(e.target.value)}
+              >
+                <option value="both">Both</option>
+                <option value="sent">Sent</option>
+                <option value="received">Received</option>
+              </select>
             </label>
             <label className="w-full">
               <span>To Date</span>
@@ -546,17 +525,17 @@ function App() {
               />
             </label>
             <label className="w-full">
-              <span>Order by</span>
+              <span>Order By</span>
               <select
                 className="select select-bordered w-full"
                 onChange={(e) => setOrderBy(e.target.value)}
               >
-                <option>newest</option>
-                <option>oldest</option>
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
               </select>
             </label>
             <label className={`w-full ${asset == "custom" ? "" : "hidden"}`}>
-              <span>Custom currency code</span>
+              <span>Custom Currency Code</span>
               <input
                 type="text"
                 placeholder="All assets"
