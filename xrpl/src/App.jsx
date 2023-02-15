@@ -449,7 +449,7 @@ function App() {
         <div className="flex p-10 w-full justify-center">
           <div className="p-4 mr-5 flex flex-col gap-8 items-end w-1/4">
             <label className="w-full">
-              <span>Sending Address</span>
+              <span>Address</span>
               <input
                 type="text"
                 placeholder=""
@@ -459,7 +459,7 @@ function App() {
               />
             </label>
             <label className="w-full">
-              <span>Source Tag</span>
+              <span>Source/Dest Tag</span>
               <input
                 type="text"
                 placeholder=""
@@ -489,18 +489,6 @@ function App() {
                 <option value="NFTokenAcceptOffer">NFTokenAcceptOffer</option>
               </select>
             </label>
-            <label className="w-full">
-              <span>Asset</span>
-              <select
-                className="select select-bordered w-full"
-                onChange={(event) => setAsset(event.target.value)}
-              >
-                <option value="">All assets</option>
-                <option value="XRP">XRP</option>
-                {assetOptions()}
-                <option value="custom">Custom</option>
-              </select>
-            </label>
           </div>
           <div className=" p-4 ml-5 flex flex-col gap-8 items-start w-1/4">
             <label className="w-full">
@@ -515,6 +503,16 @@ function App() {
               </select>
             </label>
             <label className="w-full">
+              <span>Order By</span>
+              <select
+                className="select select-bordered w-full"
+                onChange={(e) => setOrderBy(e.target.value)}
+              >
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+              </select>
+            </label>
+            <label className="w-full">
               <span>To Date</span>
               <input
                 type="date"
@@ -525,13 +523,15 @@ function App() {
               />
             </label>
             <label className="w-full">
-              <span>Order By</span>
+              <span>Asset</span>
               <select
                 className="select select-bordered w-full"
-                onChange={(e) => setOrderBy(e.target.value)}
+                onChange={(event) => setAsset(event.target.value)}
               >
-                <option value="newest">Newest</option>
-                <option value="oldest">Oldest</option>
+                <option value="">All assets</option>
+                <option value="XRP">XRP</option>
+                {assetOptions()}
+                <option value="custom">Custom</option>
               </select>
             </label>
             <label className={`w-full ${asset == "custom" ? "" : "hidden"}`}>
